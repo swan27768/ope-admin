@@ -1,0 +1,147 @@
+/* =========================
+   YLEINEN RAKENNE
+========================= */
+
+body {
+  margin: 0;
+  font-family: "Inter", Arial, sans-serif;
+  background: #f4f6f9;
+  color: #1f2937;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+/* =========================
+   OTSIKOT
+========================= */
+
+h1 {
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+/* =========================
+   PANELIT
+========================= */
+
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  margin-bottom: 25px;
+}
+
+/* =========================
+   BUTTONIT
+========================= */
+
+button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+  margin-right: 8px;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+button.primary {
+  background: #2563eb;
+  color: white;
+}
+
+button.danger {
+  background: #dc2626;
+  color: white;
+}
+
+button.secondary {
+  background: #e5e7eb;
+}
+
+/* =========================
+   TEXTAREA
+========================= */
+
+textarea {
+  font-family: monospace;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+}
+
+/* =========================
+   LEADERBOARD TAULUKKO
+========================= */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  text-align: left;
+  padding: 8px;
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* =========================
+   SANASETTIKORTTI
+========================= */
+
+.puzzle-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.puzzle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.group-name {
+  font-weight: 600;
+}
+
+.word-list {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+/* =========================
+   INFO TEKSTIT
+========================= */
+
+.info {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
