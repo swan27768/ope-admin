@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neloset – Opettajan paneeli</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+
+  <body>
+    <div class="wrap">
+      <h1>Opettajan hallintapaneeli</h1>
+
+      <!-- =========================
+           LEADERBOARD HALLINTA
+      ========================== -->
+      <div class="panel">
+        <h2>Tulostaulu</h2>
+        <div class="controls">
+          <button onclick="clearLeaderboard()">Tyhjennä tulostaulu</button>
+          <button onclick="loadAdminLeaderboard()">Päivitä</button>
+        </div>
+        <div id="adminResults"></div>
+      </div>
+
+      <!-- =========================
+           LISÄÄ SANASETTI
+      ========================== -->
+      <div class="panel">
+        <h2>Lisää sanasetti</h2>
+
+        <p>
+          Syötä JSON-muotoinen sanasetti. Jokaisessa ryhmässä täytyy olla
+          täsmälleen 4 sanaa.
+        </p>
+
+        <textarea id="puzzleInput" rows="12" style="width: 100%">
+[
+  {
+    "name": "HEDELMÄT",
+    "words": ["omena","banaani","päärynä","luumu"]
+  },
+  {
+    "name": "MAAT",
+    "words": ["suomi","ruotsi","norja","tanska"]
+  }
+]
+        </textarea>
+
+        <br /><br />
+        <button onclick="addPuzzleSet()">Lisää sanasetti</button>
+      </div>
+
+      <!-- =========================
+           SANASETTIEN LISTAUS
+      ========================== -->
+      <div class="panel">
+        <h2>Sanasetit</h2>
+        <div id="puzzleList"></div>
+      </div>
+    </div>
+
+    <!-- LADATAAN SCRIPT VASTA LOPUSSA -->
+    <script src="admin.js"></script>
+
+    <script>
+      loadAdminLeaderboard();
+      loadPuzzleList();
+    </script>
+  </body>
+</html>
