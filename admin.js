@@ -1,111 +1,154 @@
-const WEBAPP_URL =
-  "https://script.google.com/macros/s/AKfycbzYsp-fhv4lzHAZrKZ4QpIfhxinawoO6NdbkyMoSs1qlYQ8SMNUrOk76omfGkmaDxvu/exec";
-
-const REFRESH_MS = 3000;
-
 /* =========================
-   LEADERBOARD (ALL DATA)
+   KONFIGURAATIO
 ========================= */
 
-function loadAdminLeaderboard() {
-  const cbName = "admin_cb_" + Date.now();
-  const script = document.createElement("script");
+const WEBAPP_URL =
+  "https://script.google.com/macros/s/AKfycbzGWgH48X06M5qGcxAy51upLG2tQaspR_2MSFV1-lpgZzAG-zLhxft-udRbyQdf_3-aAw/exec";
 
-  window[cbName] = function (data) {
-    let html = `
-      <table>
-        <tr>
-          <th>#</th>
-          <th>Nimi</th>
-          <th>Pisteet</th>
-        </tr>
-    `;
+/* =========================
+   SALASANA
+========================= */
 
-    data.forEach((r, i) => {
-      html += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${r.name}</td>
-          <td>${r.score}</td>
-        </tr>
-      `;
-    });
+function setAdminPassword(password) {
+  localStorage.setItem("adminPassword", password);
+}
 
-    html += "</table>";
-
-    document.getElementById("adminResults").innerHTML = html;
-
-    delete window[cbName];
-    script.remove();
-  };
-
-  script.src = WEBAPP_URL + "?callback=" + cbName + "&all=true&_=" + Date.now();
-  document.body.appendChild(script);
+function getAdminPassword() {
+  return localStorage.getItem("adminPassword");
 }
 
 /* =========================
-   TYHJENNYS
+   CLEAR LEADERBOARD
 ========================= */
 
 function clearLeaderboard() {
-  if (!confirm("Haluatko varmasti tyhjentää tulostaulun?")) return;
+  const password = getAdminPassword();
 
-  const img = new Image();
-  img.src = WEBAPP_URL + "?action=clear&_=" + Date.now();
-
-  setTimeout(loadAdminLeaderboard, 1000);
+  fetch(
+    WEBAPP_URL + "?action=clear" + "&password=" + encodeURIComponent(password),
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "ok") {
+        alert("Tulostaulu tyhjennetty.");
+      } else {
+        alert("Virhe: " + data.message);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Tyhjennys epäonnistui.");
+    });
 }
+
+/* =========================
+   ADD PUZZLE SET
+========================= */
+
 function addPuzzleSet() {
-  const raw = document.getElementById("puzzleInput").value;
+  const password = getAdminPassword();
+  if (!password) {
+    alert("Anna salasana ensin.");
+    return;
+  }
 
   let groups;
 
   try {
-    groups = JSON.parse(raw);
+    groups = JSON.parse(document.getElementById("puzzleInput").value);
   } catch (e) {
-    alert("Virhe JSON-muodossa");
+    alert("Virheellinen JSON.");
     return;
   }
 
-  const setId = "set_" + Date.now();
-
-  const url =
+  fetch(
     WEBAPP_URL +
-    "?action=addPuzzle" +
-    "&setId=" +
-    encodeURIComponent(setId) +
-    "&groups=" +
-    encodeURIComponent(JSON.stringify(groups)) +
-    "&_=" +
-    Date.now();
-
-  const img = new Image();
-  img.onload = () => alert("Sanasetti lisätty!");
-  img.src = url;
-}
-function loadPuzzleList() {
-  fetch(WEBAPP_URL + "?action=listPuzzles")
+      "?action=addPuzzle" +
+      "&password=" +
+      encodeURIComponent(password) +
+      "&groups=" +
+      encodeURIComponent(JSON.stringify(groups)),
+  )
     .then((res) => res.json())
     .then((data) => {
-      const container = document.getElementById("puzzleList");
-
-      if (!data || data.length === 0) {
-        container.innerHTML = `
-          <div class="panel">
-            <div class="info">Ei sanasettejä löytynyt.</div>
-          </div>
-        `;
-        return;
+      if (data.status === "ok") {
+        alert("Sanasetti lisätty.");
+        document.getElementById("puzzleInput").value = "";
+        loadPuzzleList();
+      } else {
+        alert("Virhe: " + data.message);
       }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Lisäys epäonnistui.");
+    });
+}
 
+/* =========================
+   DELETE PUZZLE
+========================= */
+
+function deletePuzzle(setId) {
+  const password = getAdminPassword();
+  if (!password) {
+    alert("Anna salasana ensin.");
+    return;
+  }
+
+  if (!confirm("Poistetaanko tämä sanasetti?")) return;
+
+  fetch(
+    WEBAPP_URL +
+      "?action=deletePuzzle" +
+      "&setId=" +
+      encodeURIComponent(setId) +
+      "&password=" +
+      encodeURIComponent(password),
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("DELETE RESPONSE:", data);
+
+      if (data.status === "ok") {
+        document.getElementById("puzzleList").innerHTML = "Päivitetään...";
+
+        setTimeout(() => {
+          loadPuzzleList();
+        }, 300);
+      } else {
+        alert("Virhe: " + data.message);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Poisto epäonnistui.");
+    });
+}
+
+/* =========================
+   LOAD PUZZLE LIST
+========================= */
+
+function loadPuzzleList() {
+  const container = document.getElementById("puzzleList");
+  container.innerHTML = "Ladataan...";
+
+  fetch(WEBAPP_URL + "?action=listPuzzles&_=" + Date.now())
+    .then((res) => res.json())
+    .then((data) => {
       let html = "";
+
+      if (!data.length) {
+        html = "<p>Ei sanasettejä.</p>";
+      }
 
       data.forEach((set) => {
         html += `
           <div class="puzzle-card">
             <div class="puzzle-header">
-              <span><strong>Set ID:</strong> ${set.setId}</span>
-              <button class="danger" onclick="deletePuzzle('${set.setId}')">
+              <strong>Set ID:</strong> ${set.setId}
+              <button onclick="deletePuzzle('${set.setId}')">
                 Poista
               </button>
             </div>
@@ -113,9 +156,8 @@ function loadPuzzleList() {
 
         set.groups.forEach((group) => {
           html += `
-            <div class="word-list">
-              <span class="group-name">${group.name}</span>
-              → ${group.words.join(", ")}
+            <div class="puzzle-group">
+              <b>${group.name}</b> → ${group.words.join(", ")}
             </div>
           `;
         });
@@ -126,29 +168,24 @@ function loadPuzzleList() {
       container.innerHTML = html;
     })
     .catch((err) => {
-      console.error("Virhe ladattaessa sanasettejä:", err);
-      document.getElementById("puzzleList").innerHTML = `
-        <div class="panel">
-          <div class="info">Virhe ladattaessa sanasettejä.</div>
-        </div>
-      `;
+      console.error(err);
+      container.innerHTML = "Listan lataus epäonnistui.";
     });
 }
 
-function deletePuzzle(setId) {
-  if (!confirm("Poistetaanko tämä sanasetti?")) return;
-
-  fetch(WEBAPP_URL + "?action=deletePuzzle&setId=" + setId).then(() =>
-    loadPuzzleList(),
-  );
-}
-
 /* =========================
-   AUTO REFRESH
+   INIT
 ========================= */
 
-loadAdminLeaderboard();
+document.addEventListener("DOMContentLoaded", () => {
+  const existingPassword = getAdminPassword();
 
-setInterval(() => {
-  loadAdminLeaderboard();
-}, REFRESH_MS);
+  if (!existingPassword) {
+    const password = prompt("Anna opettajan salasana:");
+    if (password) {
+      setAdminPassword(password);
+    }
+  }
+
+  loadPuzzleList();
+});
