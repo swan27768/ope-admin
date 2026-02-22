@@ -175,6 +175,10 @@ async function clearLeaderboard() {
 
     if (res && res.status === "ok") {
       alert("Tulostaulu tyhjennetty.");
+      if (res && res.status === "ok") {
+        alert("Tulostaulu tyhjennetty.");
+        await loadAdminLeaderboard();
+      }
     } else {
       alert("Virhe: " + (res?.message || "Tuntematon virhe"));
     }
@@ -269,6 +273,59 @@ function escapeHtml(s) {
 function escapeAttr(s) {
   // yksinkertainen: sama kuin html
   return escapeHtml(s);
+}
+// =========================
+// ADMIN LEADERBOARD
+// =========================
+async function loadAdminLeaderboard() {
+  const container = el("adminResults");
+  if (!container) return;
+
+  container.innerHTML = "Ladataan tuloksia...";
+
+  try {
+    // ?all=true -> backend palauttaa kaikki tulokset
+    const data = await jsonpRequest(WEBAPP_URL + "?all=true");
+
+    if (!Array.isArray(data) || data.length === 0) {
+      container.innerHTML = "<i>Ei tuloksia vielä.</i>";
+      return;
+    }
+
+    // järjestetään varmuuden vuoksi pienin score ensin
+    const sorted = [...data].sort(
+      (a, b) => (a.score ?? 999999) - (b.score ?? 999999),
+    );
+
+    let html = `
+      <table>
+        <tr>
+          <th>Sija</th>
+          <th>Nimi</th>
+          <th>Aika (s)</th>
+          <th>Pisteet</th>
+        </tr>
+    `;
+
+    sorted.forEach((r, i) => {
+      html += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escapeHtml(r.name ?? "")}</td>
+          <td>${Number(r.timeSeconds ?? 0)}</td>
+          <td>${Number(r.score ?? 0)}</td>
+        </tr>
+      `;
+    });
+
+    html += `</table>`;
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    container.innerHTML =
+      "<span style='color:red'>Tulosten lataus epäonnistui.</span>";
+  }
 }
 
 // =========================
