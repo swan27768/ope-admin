@@ -67,43 +67,56 @@ function jsonpRequest(url, timeoutMs = 15000) {
 // UI: LIST PUZZLES
 // =========================
 async function loadPuzzleList() {
-  const list = el("puzzleList");
+  const list = document.getElementById("puzzleList");
   if (!list) return;
 
   list.innerHTML = "Ladataan sanasettejä...";
 
   try {
-    // listPuzzles ei välttämättä vaadi salasanaa, mutta jos haluat suojata senkin,
-    // lisää &password=...
     const data = await jsonpRequest(WEBAPP_URL + "?action=listPuzzles");
 
-    if (!Array.isArray(data)) {
-      list.innerHTML = "Virhe: listPuzzles ei palauttanut listaa.";
-      return;
-    }
-
-    if (data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
       list.innerHTML = "<i>Ei sanasettejä.</i>";
       return;
     }
 
     let html = "";
+
     data.forEach((set) => {
       html += `
         <div class="puzzle-card">
           <div class="puzzle-head">
-            <div><b>Set ID:</b> ${escapeHtml(String(set.setId || ""))}</div>
-            <button class="danger" onclick="deletePuzzle('${escapeAttr(String(set.setId || ""))}')">Poista</button>
+            <div class="puzzle-id">
+              <b>Set ID:</b> ${escapeHtml(String(set.setId || ""))}
+            </div>
+
+            <button class="danger"
+              onclick="deletePuzzle('${escapeAttr(String(set.setId || ""))}')">
+              Poista
+            </button>
           </div>
       `;
 
       (set.groups || []).forEach((g) => {
         const words = Array.isArray(g.words) ? g.words.join(", ") : "";
-        html += `<div class="puzzle-row"><b>${escapeHtml(String(g.name || ""))}</b> → ${escapeHtml(words)}</div>`;
+        html += `
+          <div class="puzzle-row">
+            <b>${escapeHtml(String(g.name || ""))}</b>
+            → ${escapeHtml(words)}
+          </div>
+        `;
       });
 
       html += `</div>`;
     });
+
+    list.innerHTML = html;
+
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = "Virhe: sanasettien lataus epäonnistui.";
+  }
+}
 
     list.innerHTML = html;
   } catch (err) {
