@@ -13,11 +13,14 @@ function el(id) {
 }
 
 function getAdminPassword() {
-  // Suosittelen että admin.html:ssä on <input id="adminPassword" type="password" ...>
-  // Jos ei ole, pyydetään promptilla.
-  const inp = el("adminPassword");
-  if (inp) return inp.value.trim();
-  return (prompt("Anna opettajan salasana:") || "").trim();
+  const input = document.getElementById("adminPassword");
+
+  if (!input) {
+    console.error("adminPassword input ei löydy DOMista.");
+    return "";
+  }
+
+  return input.value.trim();
 }
 
 function jsonpRequest(url, timeoutMs = 15000) {
@@ -114,6 +117,7 @@ async function loadPuzzleList() {
 // =========================
 async function deletePuzzle(setId) {
   const pwd = getAdminPassword();
+  console.log("PASSWORD SENT:", pwd);
   if (!pwd) {
     alert("Salasana puuttuu.");
     return;
